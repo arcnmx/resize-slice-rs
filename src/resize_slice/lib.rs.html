@@ -152,19 +152,24 @@
 <span id="110">110</span>
 <span id="111">111</span>
 <span id="112">112</span>
+<span id="113">113</span>
+<span id="114">114</span>
+<span id="115">115</span>
+<span id="116">116</span>
 </pre><pre class='rust '>
 <span class='attribute'>#<span class='op'>!</span>[<span class='ident'>deny</span>(<span class='ident'>missing_docs</span>)]</span>
 <span class='attribute'>#<span class='op'>!</span>[<span class='ident'>cfg_attr</span>(<span class='ident'>feature</span> <span class='op'>=</span> <span class='string'>&quot;unstable&quot;</span>, <span class='ident'>feature</span>(<span class='ident'>raw</span>))]</span>
 
 <span class='doccomment'>//! Shrinks slice references</span>
 <span class='doccomment'>//!</span>
-<span class='doccomment'>//! # Example</span>
+<span class='doccomment'>//! `ResizeSlice` can be used to adjust the starting offset and length of a slice.</span>
+<span class='doccomment'>//!</span>
+<span class='doccomment'>//! ## Example</span>
 <span class='doccomment'>//!</span>
 <span class='doccomment'>//! ```</span>
 <span class='doccomment'>//! use resize_slice::ResizeSlice;</span>
 <span class='doccomment'>//!</span>
 <span class='doccomment'>//! let mut slice: &amp;mut [_] = &amp;mut [1, 2, 3, 4, 5];</span>
-<span class='doccomment'>//!</span>
 <span class='doccomment'>//! slice.resize_from(2);</span>
 <span class='doccomment'>//!</span>
 <span class='doccomment'>//! assert_eq!(slice, &amp;mut [3, 4, 5]);</span>
@@ -177,18 +182,21 @@
     <span class='doccomment'>/// Resizes the slice to `start` offset and `end - start` len</span>
     <span class='doccomment'>///</span>
     <span class='doccomment'>/// # Panics</span>
+    <span class='doccomment'>///</span>
     <span class='doccomment'>/// Panics on out of bounds resize (`start &lt;= end &lt;= self.len()`)</span>
     <span class='kw'>fn</span> <span class='ident'>resize</span>(<span class='kw-2'>&amp;</span><span class='kw-2'>mut</span> <span class='self'>self</span>, <span class='ident'>start</span>: <span class='ident'>usize</span>, <span class='ident'>end</span>: <span class='ident'>usize</span>);
 
     <span class='doccomment'>/// Resize to a new beginning offset</span>
     <span class='doccomment'>///</span>
     <span class='doccomment'>/// # Panics</span>
+    <span class='doccomment'>///</span>
     <span class='doccomment'>/// Panics if `start &gt; self.len()`</span>
     <span class='kw'>fn</span> <span class='ident'>resize_from</span>(<span class='kw-2'>&amp;</span><span class='kw-2'>mut</span> <span class='self'>self</span>, <span class='ident'>start</span>: <span class='ident'>usize</span>);
 
     <span class='doccomment'>/// Resize to a new length</span>
     <span class='doccomment'>///</span>
     <span class='doccomment'>/// # Panics</span>
+    <span class='doccomment'>///</span>
     <span class='doccomment'>/// Panics if `end &gt; self.len()`</span>
     <span class='kw'>fn</span> <span class='ident'>resize_to</span>(<span class='kw-2'>&amp;</span><span class='kw-2'>mut</span> <span class='self'>self</span>, <span class='ident'>end</span>: <span class='ident'>usize</span>);
 }
