@@ -1,0 +1,3 @@
+var searchIndex = {};
+searchIndex['resize_slice'] = {"items":[[0,"","resize_slice","Shrinks slice references",null,null],[8,"ResizeSlice","","Extension trait that allows you to resize mutable slice references",null,null],[10,"resize","","Resizes the slice to `start` offset and `end - start` len",0,{"inputs":[{"name":"resizeslice"},{"name":"usize"},{"name":"usize"}],"output":null}],[10,"resize_from","","Resize to a new beginning offset",0,{"inputs":[{"name":"resizeslice"},{"name":"usize"}],"output":null}],[10,"resize_to","","Resize to a new length",0,{"inputs":[{"name":"resizeslice"},{"name":"usize"}],"output":null}]],"paths":[[8,"ResizeSlice"]]};
+initSearch(searchIndex);
