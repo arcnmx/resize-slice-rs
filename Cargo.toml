@@ -1,0 +1,14 @@
+[package]
+name = "resize-slice"
+version = "0.0.1"
+authors = ["arcnmx"]
+
+description = "Shrink slice references"
+documentation = "http://arcnmx.github.io/resize-slice-rs/resize_slice/"
+repository = "https://github.com/arcnmx/resize-slice-rs"
+readme = "README.md"
+keywords = ["slice", "resize"]
+license = "MIT"
+
+[features]
+unstable = []
