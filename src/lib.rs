@@ -16,7 +16,11 @@
 //! assert_eq!(slice, &mut [3, 4, 5]);
 //! ```
 
+extern crate uninitialized;
+
 use std::mem::transmute;
+use uninitialized::UNINITIALIZED;
+use std::ptr::write_bytes;
 
 /// Extension trait that allows you to resize mutable slice references
 pub trait ResizeSlice {
@@ -42,6 +46,7 @@ pub trait ResizeSlice {
     fn resize_to(&mut self, end: usize);
 }
 
+#[inline]
 fn slice_resize<T>(slice: &mut Slice<T>, start: usize, end: usize) {
     assert!(start <= end && end <= slice.len);
 
@@ -50,34 +55,40 @@ fn slice_resize<T>(slice: &mut Slice<T>, start: usize, end: usize) {
 }
 
 impl<'a, T> ResizeSlice for &'a mut [T] {
+    #[inline]
     fn resize(&mut self, start: usize, end: usize) {
         unsafe {
             slice_resize::<T>(transmute(self), start, end);
         }
     }
 
+    #[inline]
     fn resize_from(&mut self, start: usize) {
         let len = self.len();
         self.resize(start, len);
     }
 
+    #[inline]
     fn resize_to(&mut self, end: usize) {
         self.resize(0, end)
     }
 }
 
 impl<'a, T> ResizeSlice for &'a [T] {
+    #[inline]
     fn resize(&mut self, start: usize, end: usize) {
         unsafe {
             slice_resize::<T>(transmute(self), start, end);
         }
     }
 
+    #[inline]
     fn resize_from(&mut self, start: usize) {
         let len = self.len();
         self.resize(start, len);
     }
 
+    #[inline]
     fn resize_to(&mut self, end: usize) {
         self.resize(0, end)
     }
@@ -90,6 +101,97 @@ use std::raw::Slice;
 struct Slice<T> {
     data: *const T,
     len: usize,
+}
+
+/// Extension methods for vector types
+pub trait VecExt<T> {
+    /// Unsafely a vector to the specified size, without initializing the memory.
+    unsafe fn uninitialized_resize(&mut self, new_len: usize);
+
+    /// Unsafely a vector to the specified size, zeroing the memory.
+    unsafe fn zeroed_resize(&mut self, new_len: usize);
+}
+
+/// Extension methods for slices
+pub trait SliceExt<T> {
+    /// Copies the less of `self.len()` and `src.len()` from `src` into `self`,
+    /// returning the amount of items copies.
+    fn copy_from(&mut self, src: &[T]) -> usize where T: Copy;
+
+    /// Copies elements to another location within the slice, which may overlap.
+    fn copy_inner(&mut self, src: usize, dst: usize, len: usize) where T: Copy;
+}
+
+impl<T> SliceExt<T> for [T] {
+    #[inline]
+    fn copy_from(&mut self, src: &[T]) -> usize where T: Copy {
+        use std::ptr::copy_nonoverlapping;
+        use std::cmp::min;
+
+        let len = min(self.len(), src.len());
+        unsafe {
+            copy_nonoverlapping(src.as_ptr(), self.as_mut_ptr(), len);
+        }
+        len
+    }
+
+    #[inline]
+    fn copy_inner(&mut self, src: usize, dst: usize, len: usize) where T: Copy {
+        use std::ptr::copy;
+        assert!(self.len() - len >= src && self.len() - len >= dst);
+
+        unsafe {
+            copy(self.as_ptr().offset(src as isize), self.as_mut_ptr().offset(dst as isize), len);
+        }
+    }
+}
+
+impl<T> VecExt<T> for Vec<T> {
+    #[inline]
+    unsafe fn uninitialized_resize(&mut self, new_len: usize) {
+        let len = self.len();
+        if new_len > len {
+            self.reserve_exact(new_len - len);
+        }
+        self.set_len(new_len);
+    }
+
+    #[inline]
+    unsafe fn zeroed_resize(&mut self, new_len: usize) {
+        self.uninitialized_resize(new_len);
+        if !UNINITIALIZED {
+            write_bytes(self.as_mut_ptr(), 0, new_len);
+        }
+    }
+}
+
+#[cfg(feature = "smallvec")]
+mod smallvec_impl {
+    extern crate smallvec;
+    use self::smallvec::{SmallVec, Array};
+
+    use std::ptr::write_bytes;
+    use uninitialized::UNINITIALIZED;
+    use super::VecExt;
+
+    impl<T: Array> VecExt<T::Item> for SmallVec<T> {
+        #[inline]
+        unsafe fn uninitialized_resize(&mut self, new_len: usize) {
+            let len = self.len();
+            if new_len > len {
+                self.reserve_exact(new_len - len);
+            }
+            self.set_len(new_len);
+        }
+
+        #[inline]
+        unsafe fn zeroed_resize(&mut self, new_len: usize) {
+            self.uninitialized_resize(new_len);
+            if !UNINITIALIZED {
+                write_bytes(self.as_mut_ptr(), 0, new_len);
+            }
+        }
+    }
 }
 
 #[test]
