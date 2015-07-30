@@ -1,1 +1,1 @@
-initSidebarItems({"trait":[["ResizeSlice","Extension trait that allows you to resize mutable slice references"]]});
+initSidebarItems({"trait":[["ResizeSlice","Extension trait that allows you to resize mutable slice references"],["SliceExt","Extension methods for slices"],["VecExt","Extension methods for vector types"]]});
