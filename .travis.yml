@@ -16,9 +16,6 @@ os:
     - linux
 
 matrix:
-    fast_finish: true
-    allow_failures:
-        - rust: nightly
     include:
         - rust: nightly
           env: FEATURES="--features unstable"
