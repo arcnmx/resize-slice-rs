@@ -1,5 +1,4 @@
 #![deny(missing_docs)]
-#![cfg_attr(feature = "unstable", feature(raw))]
 
 //! Shrinks slice references
 //!
@@ -18,7 +17,7 @@
 
 extern crate uninitialized;
 
-use std::mem::transmute;
+use std::mem::{uninitialized, replace, forget};
 use uninitialized::UNINITIALIZED;
 use std::ptr::write_bytes;
 
@@ -46,20 +45,13 @@ pub trait ResizeSlice {
     fn resize_to(&mut self, end: usize);
 }
 
-#[inline]
-fn slice_resize<T>(slice: &mut Slice<T>, start: usize, end: usize) {
-    assert!(start <= end && end <= slice.len);
-
-    slice.data = unsafe { slice.data.offset(start as isize) };
-    slice.len = end - start;
-}
-
 impl<'a, T> ResizeSlice for &'a mut [T] {
     #[inline]
     fn resize(&mut self, start: usize, end: usize) {
-        unsafe {
-            slice_resize::<T>(transmute(self), start, end);
-        }
+        assert!(start <= end && end <= self.len());
+        let mut value = replace(self, unsafe { uninitialized() });
+        value = &mut {value}[start..end];
+        forget(replace(self, value));
     }
 
     #[inline]
@@ -77,45 +69,33 @@ impl<'a, T> ResizeSlice for &'a mut [T] {
 impl<'a, T> ResizeSlice for &'a [T] {
     #[inline]
     fn resize(&mut self, start: usize, end: usize) {
-        unsafe {
-            slice_resize::<T>(transmute(self), start, end);
-        }
+        *self = &self[start..end];
     }
 
     #[inline]
     fn resize_from(&mut self, start: usize) {
-        let len = self.len();
-        self.resize(start, len);
+        *self = &self[start..];
     }
 
     #[inline]
     fn resize_to(&mut self, end: usize) {
-        self.resize(0, end)
+        *self = &self[..end];
     }
-}
-
-#[cfg(feature = "unstable")]
-use std::raw::Slice;
-
-#[cfg(not(feature = "unstable"))]
-struct Slice<T> {
-    data: *const T,
-    len: usize,
 }
 
 /// Extension methods for vector types
 pub trait VecExt<T> {
-    /// Unsafely a vector to the specified size, without initializing the memory.
+    /// Unsafely resize a vector to the specified size, without initializing the memory.
     unsafe fn uninitialized_resize(&mut self, new_len: usize);
 
-    /// Unsafely a vector to the specified size, zeroing the memory.
+    /// Unsafely resize a vector to the specified size, zeroing the memory.
     unsafe fn zeroed_resize(&mut self, new_len: usize);
 }
 
 /// Extension methods for slices
 pub trait SliceExt<T> {
     /// Copies the less of `self.len()` and `src.len()` from `src` into `self`,
-    /// returning the amount of items copies.
+    /// returning the amount of items copied.
     fn copy_from(&mut self, src: &[T]) -> usize where T: Copy;
 
     /// Copies elements to another location within the slice, which may overlap.

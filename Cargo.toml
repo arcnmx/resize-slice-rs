@@ -1,6 +1,6 @@
 [package]
 name = "resize-slice"
-version = "0.1.1"
+version = "0.1.2"
 authors = ["arcnmx"]
 
 description = "Shrink slice references"
@@ -10,12 +10,6 @@ readme = "README.md"
 keywords = ["slice", "resize"]
 license = "MIT"
 
-[features]
-unstable = []
-
-[dependencies.smallvec]
-git = "https://github.com/servo/rust-smallvec"
-optional = true
-
-[dependencies.uninitialized]
-version = "0.0"
+[dependencies]
+uninitialized = "0.0"
+smallvec = { version = "0.1", optional = true }
