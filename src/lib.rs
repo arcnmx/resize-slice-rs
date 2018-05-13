@@ -17,7 +17,7 @@
 
 extern crate uninitialized;
 
-use std::mem::{uninitialized, replace, forget};
+use std::mem::replace;
 use uninitialized::UNINITIALIZED;
 use std::ptr::write_bytes;
 
@@ -49,9 +49,9 @@ impl<'a, T> ResizeSlice for &'a mut [T] {
     #[inline]
     fn resize(&mut self, start: usize, end: usize) {
         assert!(start <= end && end <= self.len());
-        let mut value = replace(self, unsafe { uninitialized() });
+        let mut value = replace(self, &mut []);
         value = &mut {value}[start..end];
-        forget(replace(self, value));
+        replace(self, value);
     }
 
     #[inline]
