@@ -50,7 +50,7 @@ impl<'a, T> ResizeSlice for &'a mut [T] {
     fn resize(&mut self, start: usize, end: usize) {
         assert!(start <= end && end <= self.len());
         let mut value = replace(self, &mut []);
-        value = &mut unsafe { value.get_unchecked_mut(start..end) };
+        value = unsafe { value.get_unchecked_mut(start..end) };
         replace(self, value);
     }
 
